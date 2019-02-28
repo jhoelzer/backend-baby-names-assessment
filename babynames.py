@@ -45,8 +45,35 @@ def extract_names(filename):
     followed by the name-rank strings in alphabetical order.
     ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
     """
-    # +++your code here+++
-    return
+    result = []
+    with open(filename) as f:
+        text = f.read()
+
+    # get the year using the regex from readme
+    year_match = re.search(r'Popularity\sin\s(\d\d\d\d)', text) # regex #1 (looks for 'Popularity in [date]')
+    assert year_match
+    if not year_match:
+        print('Could not extract the year')
+        return None # since there is no for loop here
+    year = year_match.group(1) # the group(1) indicates that you are looking for only the first group (stuff in ()) in the regex
+    print('Found year: {}'.format(year))
+    result.append(year)
+
+    tuples = re.findall(r'<td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>', text) # 
+    # each tuple looks like this now: ('rank', 'name1', 'name2')
+    # from the data in the tuple, nsert into result list
+    names_to_rank = {}
+    for rank, boy, girl in tuples:
+        if boy not in names_to_rank: # if this boy name is not already in the names_to_rank dict, then add it
+            names_to_rank[boy] = rank
+        if girl not in names_to_rank:
+            names_to_rank[girl] = rank
+
+    sorted_names = sorted(names_to_rank.keys()) # sorting based on keys not values
+    for name in sorted_names:
+        result.append(name + ' ' + names_to_rank[name])
+    print(result)
+    return result
 
 
 def create_parser():
@@ -76,6 +103,19 @@ def main():
     # +++your code here+++
     # For each filename, get the names, then either print the text output
     # or write it to a summary file
+
+    for filename in file_list:
+        data = extract_names(filename)
+        text = '\n'.join(data)
+        
+        if create_summary:
+            file_format = re.search(r'(baby\d\d\d\d).html', filename)
+            with open('{}_summary.txt'.format(file_format.group(1)), 'w') as output_file:
+                output_file.write(text)
+        else:
+            print(data)
+
+    # extract_names('baby1990.html')
 
 
 if __name__ == '__main__':
